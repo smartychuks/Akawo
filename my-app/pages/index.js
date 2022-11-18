@@ -1,6 +1,6 @@
 import { Contract, providers, utils } from "ethers";
 import Head from "next/head";
-import styles from "../styles/Home.modules.css";
+import styles from "../styles/Home.module.css";
 import React, { useEffect, useRef, useState } from "react";
 import Web3Modal from "web3modal";
 import {TOKEN_CONTRACT_ADDRESS, TOKEN_CONTRACT_ABI, AKAWO_CONTRACT_ADDRESS, AKAWO_CONTRACT_ABI } from "../constants";
@@ -31,7 +31,7 @@ export default function Home (){
   const getProviderOrSigner = async (needSigner=false) => {
     // Connect to metamask
     const provider = await web3ModalRef.current.connect();
-    const web3Provider = new providers.web3Provider(provider);
+    const web3Provider = new providers.Web3Provider(provider);
 
     // check if user connected to mumbai
     const { chainId } = await web3Provider.getNetwork();
@@ -51,11 +51,13 @@ export default function Home (){
     if(!walletConnected){
       web3ModalRef.current = new Web3Modal({
         network: "mumbai",
+        cacheProvider: true,
         providerOptions: {},
         disableInjectedProvider: false,
       });
 
       connectWallet();
+      getBalance()
     }
   }, [walletConnected]);
 
@@ -63,16 +65,33 @@ export default function Home (){
   const deposit = async () => {
     try {
       const signer = await getProviderOrSigner(true);
-      const akawoContract = new Contract(AKAWO_CONTRACT_ADDRESS, AKAWO_CONTRACT_ABI, signer);
-      const tokenContract = new Contract(TOKEN_CONTRACT_ADDRESS, TOKEN_CONTRACT_ABI, signer);
+      const akawoContract = new Contract(
+        AKAWO_CONTRACT_ADDRESS, 
+        AKAWO_CONTRACT_ABI, 
+        signer
+        );
+      const tokenContract = new Contract(
+        TOKEN_CONTRACT_ADDRESS, 
+        TOKEN_CONTRACT_ABI, 
+        signer
+        );
 
       let tx;
       // Aprove the contract to access user's token
-      tx = await tokenContract.approve(AKAWO_CONTRACT_ADDRESS, utils.parseEther(depositAmount.toString()));
+      tx = await tokenContract.approve(
+        AKAWO_CONTRACT_ADDRESS, 
+        depositAmount.toString()
+        );      
+      setLoading(true);
       await tx.wait()//wait for transaction to be mined
-      tx = await akawoContract.deposit(utils.parseEther(depositAmount), TOKEN_CONTRACT_ADDRESS);
+      setLoading(false);
+      tx = await akawoContract.deposit(
+        depositAmount.toString(), 
+        TOKEN_CONTRACT_ADDRESS
+        );
       setLoading(true);
       await tx.wait();
+      await getBalance();
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -84,14 +103,57 @@ export default function Home (){
   const withdraw = async()=>{
     try {
       const signer = await getProviderOrSigner(true);
-      const akawoContract = new Contract(AKAWO_CONTRACT_ADDRESS, AKAWO_CONTRACT_ABI, signer);
+      const akawoContract = new Contract(
+        AKAWO_CONTRACT_ADDRESS, 
+        AKAWO_CONTRACT_ABI, 
+        signer
+        );
 
-      let tx = await akawoContract.withdraw(utils.parseEther(withdrawAmount), TOKEN_CONTRACT_ADDRESS);
+        console.log(withdrawAmount);
+
+      let tx = await akawoContract.withdraw(
+        withdrawAmount.toString(), 
+        TOKEN_CONTRACT_ADDRESS
+        );
       setLoading(true);
       await tx.wait();
+      await getBalance();
       setLoading(false);      
     } catch (error) {
       setLoading(false);
+      console.error(error);
+    }
+  }
+
+  // Function to get the Balance
+  const getBalance = async()=> {
+    try {
+      const signer = await getProviderOrSigner(true);
+      const address = await signer.getAddress();
+      setConnectedAddress(address);
+      const akawoContract = new Contract(
+        AKAWO_CONTRACT_ADDRESS, 
+        AKAWO_CONTRACT_ABI, 
+        signer
+      );
+      let bal = await akawoContract.getBalances();
+      // convert from wei to user readable format
+      bal = utils.formatEther(bal);
+      setAddressBalance(bal);
+      return addressBalance;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  // function that disconnects wallet
+  const onDisconnect = async () => {
+    try {
+      await getProviderOrSigner();
+      await web3ModalRef.current.clearCachedProvider();
+      setWalletConnected(false);
+      console.log("walletConnected is ",walletConnected);
+    } catch (error) {
       console.error(error);
     }
   }
@@ -130,6 +192,9 @@ export default function Home (){
                 Open Vault
               </button>
             </label>
+            <button className={styles.button} onClick={onDisconnect}>
+              Log out
+            </button>
             <br /> <br />
           </div>
         </div>
@@ -161,7 +226,7 @@ export default function Home (){
           Akawo, is a Decentralised Bank. Where you save funds to earn.
         </div>
         <div className={styles.description}>
-          {walletConnected ? renderConnect() : renderOnDisconnect}
+          {walletConnected ? renderConnect() : renderOnDisconnect()}
         </div>
         <br /><br />
         {loading == true ? isLoading() : null}
