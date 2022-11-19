@@ -287,7 +287,7 @@ export const TOKEN_CONTRACT_ABI=[
       "type": "function"
     }
   ];
-export const AKAWO_CONTRACT_ADDRESS="0x1867F7113a8e9b5d47c2bd3f4b1BE781BbDcD159";
+export const AKAWO_CONTRACT_ADDRESS="0xbd8Ad3b6D16C23FD791fFba8BF9297557deB8eAa";
 export const AKAWO_CONTRACT_ABI=[
   {
     "inputs": [],
@@ -302,7 +302,45 @@ export const AKAWO_CONTRACT_ABI=[
         "type": "address"
       }
     ],
-    "name": "balances",
+    "name": "account",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "balancesFixed",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "balancesFlexible",
     "outputs": [
       {
         "internalType": "uint256",
@@ -332,7 +370,13 @@ export const AKAWO_CONTRACT_ABI=[
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_account",
+        "type": "bool"
+      }
+    ],
     "name": "getBalances",
     "outputs": [
       {
@@ -342,6 +386,19 @@ export const AKAWO_CONTRACT_ABI=[
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_account",
+        "type": "bool"
+      }
+    ],
+    "name": "setAcount",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

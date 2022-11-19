@@ -14,6 +14,7 @@ export default function Home (){
   const [addressBalance, setAddressBalance] = useState(0);
   const [depositAmount, setDepositAmount] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);
+  const [accountType, setAccountType] = useState(true);
   const web3ModalRef = useRef();
 
   // Function to connect to the wallet
@@ -57,9 +58,9 @@ export default function Home (){
       });
 
       connectWallet();
-      getBalance()
+      getBalance();
     }
-  }, [walletConnected]);
+  }, [walletConnected, accountType]);
 
   // Function to deposit ERC20 token to contract
   const deposit = async () => {
@@ -110,7 +111,7 @@ export default function Home (){
         );
 
         console.log(withdrawAmount);
-
+        
       let tx = await akawoContract.withdraw(
         withdrawAmount.toString(), 
         TOKEN_CONTRACT_ADDRESS
@@ -136,11 +137,32 @@ export default function Home (){
         AKAWO_CONTRACT_ABI, 
         signer
       );
-      let bal = await akawoContract.getBalances();
+      let bal = await akawoContract.getBalances(accountType);
       // convert from wei to user readable format
       bal = utils.formatEther(bal);
       setAddressBalance(bal);
       return addressBalance;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  // Function to set account type
+  const setAccount = async() =>{
+    try {
+      const signer = await getProviderOrSigner(true);
+      const address = await signer.getAddress();
+      setConnectedAddress(address);
+      const akawoContract = new Contract(
+        AKAWO_CONTRACT_ADDRESS, 
+        AKAWO_CONTRACT_ABI, 
+        signer
+      );
+
+      console.log(accountType);
+      await akawoContract.setAcount(accountType);
+      
+      await getBalance();
     } catch (error) {
       console.error(error);
     }
@@ -175,6 +197,17 @@ export default function Home (){
             <br /><br />
             <strong>Total Amount in Account:</strong> {addressBalance}
             <br />
+            <label>
+              Account:
+              <select className={styles.select} name="dropdown" id="dropdown"
+              onChange={async()=>{
+                setAccountType(!accountType);
+                setAccount();
+              }}>
+                <option value="false">Flexible Account</option>
+                <option value="true">Fixed Account</option>
+              </select><br />
+            </label>
             <label>
               Deposit:
               <input id="deposit" type="number" placeholder="Amount of Tokens"
