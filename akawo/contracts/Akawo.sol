@@ -5,10 +5,12 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 contract Akawo{
     ERC20 _token;
     address _owner;
+    uint locktime = 0;
     mapping(address => uint) public balancesFlexible;
     mapping(address => uint) public balancesFixed;
     // @map: account selected false for flexible and true for fixed
     mapping(address => bool) public account;
+    mapping(address => uint) public time;
 
 
     constructor(){
@@ -25,6 +27,15 @@ contract Akawo{
             balancesFlexible[msg.sender] += _amount;
         }else{
             balancesFixed[msg.sender] += _amount;
+            
+            //lock and add one minute locktime for each deposit
+            /*if (locktime < block.timestamp){
+                locktime = block.timestamp + 60;
+                time[msg.sender] += locktime;
+            }*/
+            // I comment out the above statement, because there seem to be an error such
+            // that it adds 106 years to locktime when the user does deposits multiple times
+            // in a row within a minute
         }
     }
 
@@ -39,6 +50,7 @@ contract Akawo{
         }else{// for fixed account
             require(balancesFixed[msg.sender] > 0, "Fixed saving account Balance is empty");
             require(balancesFixed[msg.sender] >= _amount, "Insufficient fixed account Balance");   
+            require(block.timestamp > time[msg.sender], "Time for withdrawal has not reached");
             _token.transfer(msg.sender, _amount);
             balancesFixed[msg.sender] -= _amount;
         }
@@ -56,5 +68,15 @@ contract Akawo{
         }else{// Fixed account balance
             return balancesFixed[msg.sender];
         }
+    }
+
+    // function to get amount of time its locked
+    function getLockTime() public view returns(uint){
+        return time[msg.sender];
+    }
+
+    //Function to increase locktime
+    function increaseLockTime(uint _secondsToIncrease) public {
+        time[msg.sender] += _secondsToIncrease; 
     }
 }

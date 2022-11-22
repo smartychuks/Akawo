@@ -3,10 +3,10 @@ import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import React, { useEffect, useRef, useState } from "react";
 import Web3Modal from "web3modal";
-import {TOKEN_CONTRACT_ADDRESS, TOKEN_CONTRACT_ABI, AKAWO_CONTRACT_ADDRESS, AKAWO_CONTRACT_ABI } from "../constants";
+import { TOKEN_CONTRACT_ADDRESS, TOKEN_CONTRACT_ABI, AKAWO_CONTRACT_ADDRESS, AKAWO_CONTRACT_ABI } from "../constants";
 
 
-export default function Home (){
+export default function Home() {
 
   const [walletConnected, setWalletConnected] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -14,7 +14,11 @@ export default function Home (){
   const [addressBalance, setAddressBalance] = useState(0);
   const [depositAmount, setDepositAmount] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);
-  const [accountType, setAccountType] = useState(true);
+  const [accountType, setAccountType] = useState(false);
+  const [withdrawDate, setWithdrawDate] = useState("");
+  const [unixWithdrawDate, setUnixWithdrawDate] = useState("");
+  const [extendTime, setExtendTime] = useState("");
+  const [isAccount, setIsAccount] = useState(true);
   const web3ModalRef = useRef();
 
   // Function to connect to the wallet
@@ -27,7 +31,7 @@ export default function Home (){
     }
   }
 
-  // Function to determine if wallet nedd singing or not
+  // Function to determine if wallet need singing or not
   // and also connected to the metamask wallet
   const getProviderOrSigner = async (needSigner=false) => {
     // Connect to metamask
@@ -58,7 +62,6 @@ export default function Home (){
       });
 
       connectWallet();
-      getBalance();
     }
   }, [walletConnected, accountType]);
 
@@ -76,24 +79,47 @@ export default function Home (){
         TOKEN_CONTRACT_ABI, 
         signer
         );
-
-      let tx;
-      // Aprove the contract to access user's token
-      tx = await tokenContract.approve(
-        AKAWO_CONTRACT_ADDRESS, 
-        depositAmount.toString()
-        );      
-      setLoading(true);
-      await tx.wait()//wait for transaction to be mined
-      setLoading(false);
-      tx = await akawoContract.deposit(
-        depositAmount.toString(), 
-        TOKEN_CONTRACT_ADDRESS
-        );
-      setLoading(true);
-      await tx.wait();
-      await getBalance();
-      setLoading(false);
+        if(accountType){// For flexible account
+        let tx;
+        // Aprove the contract to access user's token
+        tx = await tokenContract.approve(
+          AKAWO_CONTRACT_ADDRESS, 
+          depositAmount.toString()
+          );      
+        setLoading(true);
+        await tx.wait()//wait for transaction to be mined
+        setLoading(false);
+        tx = await akawoContract.deposit(
+          depositAmount.toString(), 
+          TOKEN_CONTRACT_ADDRESS
+          );
+        setLoading(true);
+        await tx.wait();
+        await getBalance();
+        //await getLockTime();
+        setLoading(false);
+      }else{// For fixed account
+        let tx;
+        // Aprove the contract to access user's token
+        tx = await tokenContract.approve(
+          AKAWO_CONTRACT_ADDRESS, 
+          depositAmount.toString()
+          );      
+        setLoading(true);
+        await tx.wait()//wait for transaction to be mined
+        setLoading(false);
+        //let tx2 = await akawoContract.setAcount(accountType);
+        setLoading(true);
+        //await tx2.wait();
+        tx = await akawoContract.deposit(
+          depositAmount.toString(), 
+          TOKEN_CONTRACT_ADDRESS
+          );                
+        await tx.wait();        
+        await getBalance();
+        await getLockTime();
+        setLoading(false);
+      }
     } catch (error) {
       setLoading(false);
       console.error(error);
@@ -110,16 +136,41 @@ export default function Home (){
         signer
         );
 
-        console.log(withdrawAmount);
-        
-      let tx = await akawoContract.withdraw(
-        withdrawAmount.toString(), 
-        TOKEN_CONTRACT_ADDRESS
-        );
-      setLoading(true);
-      await tx.wait();
-      await getBalance();
-      setLoading(false);      
+      // Check account type before withdrawal
+      if (accountType){//for flexible
+        let tx = await akawoContract.withdraw(
+          withdrawAmount.toString(), 
+          TOKEN_CONTRACT_ADDRESS
+          );        
+        setLoading(true);
+        await tx.wait();
+        await getBalance();
+        // setWithdrawDate("Not available") if balance empty
+        if(addressBalance <= 0){
+          setWithdrawDate("Not Available");
+        }
+        setLoading(false); 
+      }else{// for fixed account
+        // Check if its time to withdraw
+        if(unixWithdrawDate > Date.now()/1000){
+          alert("You can only withdraw after funds has been unlocked")
+        }else{
+          let tx = await akawoContract.withdraw(
+            withdrawAmount.toString(), 
+            TOKEN_CONTRACT_ADDRESS
+            );        
+          setLoading(true);
+          await tx.wait();
+          await getBalance();
+          await getLockTime();
+          // setWithdrawDate("Not available") if balance empty
+          if(addressBalance <= 0){
+            setWithdrawDate("Not Available");
+            console.log("setWithdrawDate");
+          }
+          setLoading(false);
+        }
+      }   
     } catch (error) {
       setLoading(false);
       console.error(error);
@@ -168,7 +219,35 @@ export default function Home (){
     }
   }
 
-  // function that disconnects wallet
+  // function to increase the funds are locked
+  const increaseLockTime = async() => {
+    try {
+      const signer = await getProviderOrSigner(true);
+      const akawoContract = new Contract(
+        AKAWO_CONTRACT_ADDRESS, 
+        AKAWO_CONTRACT_ABI, 
+        signer
+      );
+      let newDate = extendTime.toString();
+      newDate = new Date(newDate).getTime()/1000;
+      if(newDate - unixWithdrawDate < 0){
+        alert("The new Date set must be further ahead of previous Date");
+      }else if(newDate - Date.now()/1000 < 0) {
+        alert("New Date can not be in past")
+      }else{
+        newDate = newDate - unixWithdrawDate;
+        const increaseTime = await akawoContract.increaseLockTime(newDate);
+        setLoading(true);
+        await increaseTime.wait();
+        await getLockTime();
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  // function that disconnects wallet not used yet
   const onDisconnect = async () => {
     try {
       await getProviderOrSigner();
@@ -187,28 +266,56 @@ export default function Home (){
     </div>
   );
 
+  //function to get date for withdrawal
+  const getLockTime = async() => {
+    try {
+      const signer = await getProviderOrSigner(true);
+      const akawoContract = new Contract(
+        AKAWO_CONTRACT_ADDRESS, 
+        AKAWO_CONTRACT_ABI, 
+        signer
+      );
+      let withdrawDate = await akawoContract.getLockTime();
+      setUnixWithdrawDate(withdrawDate.toString());
+      withdrawDate = new Date (withdrawDate * 1000);
+      setWithdrawDate(withdrawDate.toString());
+
+      if(accountType){
+        setWithdrawDate("Flexible account");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   // function to render content if wallet is connected
   const renderConnect = () => {
-    if(walletConnected && !loading){
+    if(walletConnected && isAccount){ 
+
       return(
         <div>
           <div className={styles.description}>
+            <strong><a className={styles.descriptionlink} href="#" onClick={getLockTime}>Click here to check withdrawal Date: </a>  </strong> {withdrawDate}
+            <br />
             <strong>Wallet Address Connected:</strong> {connectedAddress}
-            <br /><br />
+            <br />
             <strong>Total Amount in Account:</strong> {addressBalance}
             <br />
-            <label>
+            <label className={styles.label}>
               Account:
               <select className={styles.select} name="dropdown" id="dropdown"
               onChange={async()=>{
+                setLoading(true);
                 setAccountType(!accountType);
                 setAccount();
+                getBalance();
+                setLoading(false);
               }}>
-                <option value="false">Flexible Account</option>
-                <option value="true">Fixed Account</option>
+                <option value="false">Fixed Account</option>
+                <option value="true">Flexible Account</option>
               </select><br />
             </label>
-            <label>
+            <label className={styles.label}>
               Deposit:
               <input id="deposit" type="number" placeholder="Amount of Tokens"
               onChange={(e) => setDepositAmount(utils.parseEther(e.target.value || "0"))}
@@ -216,7 +323,7 @@ export default function Home (){
               <button className={styles.button} onClick={deposit}>Close Vault</button>
             </label>
             <br /><br />
-            <label>
+            <label className={styles.label}>
               Withdraw:
               <input id="withdraw" type="number" placeholder="Amount of Tokens"
               onChange={(e) => setWithdrawAmount(utils.parseEther(e.target.value || "0"))}
@@ -225,22 +332,37 @@ export default function Home (){
                 Open Vault
               </button>
             </label>
-            <button className={styles.button} onClick={onDisconnect}>
-              Log out
-            </button>
-            <br /> <br />
           </div>
         </div>
       );
     };
   };
 
+  // function to render the input to extend locktime for fixed account
+  const extendsTime = () => {
+      if(isAccount){
+        return(
+          <label className={styles.label}>
+            Set Custom lock Date: 
+            <input type="datetime-local" id="withdraw" className={styles.input}
+              onChange={(e) => setExtendTime(e.target.value || "0")} />
+            <button className={styles.button} onClick={increaseLockTime}>
+              Set / Extend Date
+            </button>
+          </label>
+        )
+      }
+  }
+
   // Render content if not connected
-  const renderOnDisconnect = () => (
-    <button onClick={connectWallet} className={styles.button}>
-      Sign up / Sign in
-    </button>
-  );
+  const renderOnDisconnect = () => {
+    if(!walletConnected){
+      <button onClick={connectWallet} className={styles.button}>
+        Sign up / Sign in
+      </button>
+    ;
+    }
+  }
 
   return(
     <div>
@@ -251,22 +373,41 @@ export default function Home (){
       </Head>
       <div className={styles.main}>
         <div className={styles.body}>
-          <h1 className={styles.title}>Akawo</h1>
-
+          <div className={styles.nav}>
+            <div className={styles.navheader}>
+              <div className={styles.navtitle}>
+                Akawo
+              </div>
+            </div>
+            <div className={styles.navbtn}>
+              <label for="nav-check">
+                <span></span>
+                <span></span>
+                <span></span>
+              </label>
+            </div>
+            <div className={styles.navlinks}>
+              <ul>
+                <li><a href="#" onClick={()=>setIsAccount(true)}>Account</a></li>
+                <li><a href="#" onClick={()=>setIsAccount(false)}>Swap</a></li>
+                
+              </ul>
+            </div>
+          </div>
 
         </div>
         <div className={styles.description}>
-          Akawo, is a Decentralised Bank. Where you save funds to earn.
-        </div>
-        <div className={styles.description}>
+          <p>Akawo, is a Decentralised Bank. Where you save funds to earn.</p>
+          
           {walletConnected ? renderConnect() : renderOnDisconnect()}
+          {walletConnected && !accountType ? extendsTime() : null }
+          
         </div>
-        <br /><br />
         {loading == true ? isLoading() : null}
       </div>
 
       <footer className={styles.footer}>
-        Made with &#10084; by <a href="https://twitter.com/goldenchuks4" target="_blank" rel="noreferrer">@iSmarty</a>
+        Made with &#10084; by <a href="https://twitter.com/goldenchuks4" target="_blank" rel="noreferrer"> @iSmarty</a>
       </footer>
 
     </div>

@@ -287,7 +287,7 @@ export const TOKEN_CONTRACT_ABI=[
       "type": "function"
     }
   ];
-export const AKAWO_CONTRACT_ADDRESS="0xbd8Ad3b6D16C23FD791fFba8BF9297557deB8eAa";
+export const AKAWO_CONTRACT_ADDRESS="0x7FfA52205288d0Df38B0eDF3FC4414145368CeC2";
 export const AKAWO_CONTRACT_ABI=[
   {
     "inputs": [],
@@ -389,6 +389,32 @@ export const AKAWO_CONTRACT_ABI=[
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getLockTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_secondsToIncrease",
+        "type": "uint256"
+      }
+    ],
+    "name": "increaseLockTime",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "bool",
@@ -399,6 +425,25 @@ export const AKAWO_CONTRACT_ABI=[
     "name": "setAcount",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "time",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
