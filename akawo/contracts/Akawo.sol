@@ -12,6 +12,11 @@ contract Akawo{
     mapping(address => bool) public account;
     mapping(address => uint) public time;
 
+    // modifier for only owner
+    modifier onlyOwner{
+        require(msg.sender == _owner, "Operation not allowed");
+        _;
+    }
 
     constructor(){
         _owner = msg.sender;
@@ -29,13 +34,10 @@ contract Akawo{
             balancesFixed[msg.sender] += _amount;
             
             //lock and add one minute locktime for each deposit
-            /*if (locktime < block.timestamp){
+            if (locktime < block.timestamp){
                 locktime = block.timestamp + 60;
                 time[msg.sender] += locktime;
-            }*/
-            // I comment out the above statement, because there seem to be an error such
-            // that it adds 106 years to locktime when the user does deposits multiple times
-            // in a row within a minute
+            }
         }
     }
 
@@ -78,5 +80,18 @@ contract Akawo{
     //Function to increase locktime
     function increaseLockTime(uint _secondsToIncrease) public {
         time[msg.sender] += _secondsToIncrease; 
+    }
+
+    // Function to reset withdrawal time for an address
+    // This function is useful because i noticed an error that
+    // ocusrs in rare cases and Causes the locktime to inrease 
+    // in years or more when user interacts as fixed account
+    function resetTime (address user) public onlyOwner{
+        time[user] = 0;
+    } 
+
+    // function to check and return if owner
+    function isDOwner() public view returns (address) {
+        return _owner;
     }
 }

@@ -287,7 +287,7 @@ export const TOKEN_CONTRACT_ABI=[
       "type": "function"
     }
   ];
-export const AKAWO_CONTRACT_ADDRESS="0x7FfA52205288d0Df38B0eDF3FC4414145368CeC2";
+export const AKAWO_CONTRACT_ADDRESS="0x8559bf535c33632f73689c69E52C5A395fa0cce6";
 export const AKAWO_CONTRACT_ABI=[
   {
     "inputs": [],
@@ -410,6 +410,32 @@ export const AKAWO_CONTRACT_ABI=[
       }
     ],
     "name": "increaseLockTime",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "isDOwner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "resetTime",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
