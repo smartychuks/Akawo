@@ -797,7 +797,7 @@ export default function Home() {
               <ul>
                 <li className={styles.li} href="#" onClick={()=>setRerender(true)}
                   style={{visibility: reRender ? 'hidden' : 'visible'}}
-                >Connect Wallet </li>
+                >Connect</li>
                 <li><a href="#" onClick={()=>setIsAccount(true)}>Account</a></li>
                 <li><a href="#" onClick={()=>setIsAccount(false)}>Trade</a></li>
                 <li><a href="#" onClick={()=>setIsEarn(true)}>Earn</a></li>
