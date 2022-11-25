@@ -11,6 +11,8 @@ contract Akawo{
     // @map: account selected false for flexible and true for fixed
     mapping(address => bool) public account;
     mapping(address => uint) public time;
+    mapping(address => uint) public earnTime;
+
 
     // modifier for only owner
     modifier onlyOwner{
@@ -38,6 +40,21 @@ contract Akawo{
                 locktime = block.timestamp + 60;
                 time[msg.sender] += locktime;
             }
+        }
+    }
+
+    // function to set earn time to 24 hours
+    function setEarnTime() public ifNotPaused{
+        // check if user already in earning circle
+        if(earnTime[msg.sender] - block.timestamp < 0){           
+            earnTime[msg.sender] = block.timestamp + 60;
+        }
+    }
+
+    // function to get Earn time
+    function getEarnTime () public view returns (uint){
+        if(earnTime[msg.sender] > 0){
+            return earnTime[msg.sender];
         }
     }
 

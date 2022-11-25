@@ -146,7 +146,7 @@ export default function Home() {
         await getBalance();
         //await getLockTime();
         setLoading(false);
-      }else{// For fixed account
+      }else if(!accountType){// For fixed account
         let tx;
         // Aprove the contract to access user's token
         tx = await tokenContract.approve(
@@ -198,7 +198,7 @@ export default function Home() {
           setWithdrawDate("Not Available");
         }
         setLoading(false); 
-      }else{// for fixed account
+      }else if(!accountType){// for fixed account
         // Check if its time to withdraw
         if(unixWithdrawDate > Date.now()/1000){
           alert("You can only withdraw after funds has been unlocked")
@@ -703,7 +703,7 @@ export default function Home() {
 
   // function to render the input to extend locktime for fixed account
   const extendsTime = () => {
-      if(whichTab == "account"){
+      if((whichTab == "account") && !accountType){
         return(
           <div>
             Set Custom lock Date: 
