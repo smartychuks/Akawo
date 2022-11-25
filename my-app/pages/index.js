@@ -4,7 +4,7 @@ import styles from "../styles/Home.module.css";
 import React, { useEffect, useRef, useState } from "react";
 import Web3Modal from "web3modal";
 import { TOKEN_CONTRACT_ADDRESS, TOKEN_CONTRACT_ABI, AKAWO_CONTRACT_ADDRESS, AKAWO_CONTRACT_ABI } from "../constants";
-import { addLiquidity, calculateAKW, calculatedAKW } from "../utils/addLiquidity";
+import { addLiquidity, calculateAKW } from "../utils/addLiquidity";
 import { getAKWTokensBalance, getMaticBalance, getLPTokensBalance, getReserveOfAKWTokens } from "../utils/getAmounts";
 import { getTokensAfterRemove, removeLiquidity } from "../utils/removeLiquidity";
 import { swapTokens, getAmountOfTokensReceivedFromSwap } from "../utils/swap";
@@ -24,7 +24,8 @@ export default function Home() {
   const [isAccount, setIsAccount] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
   const [resetAddress, setResetAddress] = useState("");
-  //const [addressAKWBalance, setAddressAKWBalance] = useState(0);
+  const [reRender, setRerender] = useState(false);
+  const [isEarn, setIsEarn] = useState(false);
   // The tab user is in
   const [liquidityTab, setLiquidityTab] = useState(false);
   // Initialize the variable
@@ -61,6 +62,7 @@ export default function Home() {
   // Function to connect to the wallet
   const connectWallet = async() => {
     try {
+      
       await getProviderOrSigner();
       setWalletConnected(true);
       await isDOwner();
@@ -76,6 +78,13 @@ export default function Home() {
     const provider = await web3ModalRef.current.connect();
     const web3Provider = new providers.Web3Provider(provider);
 
+    //check if metamask is installed
+    if (!window.ethereum) {
+      enqueueSnackbar("You have to install a wallet like Metamask!", {
+        variant: "error",
+        preventDuplicate: true,
+      });
+    }
     // check if user connected to mumbai
     const { chainId } = await web3Provider.getNetwork();
     if (chainId !== 80001){
@@ -103,7 +112,7 @@ export default function Home() {
       getBalance();
       getAmounts();
     }
-  }, [walletConnected]);
+  }, [walletConnected, reRender]);
 
   // Function to deposit ERC20 token to contract
   const deposit = async () => {
@@ -302,10 +311,8 @@ export default function Home() {
       // get amount of LP tokens owned
       const _lpBalance = await getLPTokensBalance(provider, address);
       // get amount of AKW tokens in contract
-      console.log("okay1");
       const _reservedAKW = await getReserveOfAKWTokens(provider);
       // get the amount of Matic in Contract
-      console.log("okay2");
       const _maticBalanceContract = await getMaticBalance(provider, null, true);
       setMaticBalance(_maticBalance);
       setAKWBalance(_akwBalance);
@@ -487,7 +494,7 @@ export default function Home() {
           <div className={styles.description}>
             <strong><a className={styles.descriptionlink} href="#" onClick={getLockTime}>Click here to check withdrawal Date: </a>  </strong> {withdrawDate}
             <br />
-            <strong>Wallet Address Connected:</strong> {connectedAddress}
+            <strong>Wallet Address Connected: </strong><small><i> {connectedAddress} </i></small>
             <br />
             <strong>Total Amount in Account:</strong> {addressBalance}
             <br />
@@ -526,7 +533,7 @@ export default function Home() {
           </div>
         </div>
       );
-    }else if(!isAccount){
+    }else if(walletConnected && !isAccount){
       return(
         <>
           <div className={styles.swap}>
@@ -544,6 +551,8 @@ export default function Home() {
           </div>
         </>
       )
+    }else{
+      renderOnDisconnect();
     }
   };
 
@@ -786,8 +795,12 @@ export default function Home() {
             </div>
             <div className={styles.navlinks}>
               <ul>
+                <li className={styles.li} href="#" onClick={()=>setRerender(true)}
+                  style={{visibility: reRender ? 'hidden' : 'visible'}}
+                >Connect Wallet </li>
                 <li><a href="#" onClick={()=>setIsAccount(true)}>Account</a></li>
                 <li><a href="#" onClick={()=>setIsAccount(false)}>Trade</a></li>
+                <li><a href="#" onClick={()=>setIsEarn(true)}>Earn</a></li>
                 
               </ul>
             </div>
@@ -796,11 +809,13 @@ export default function Home() {
         </div>
         <div className={styles.description}>
           <p>Akawo, is a Decentralised Bank. Where you save funds to earn.</p>
+
+          {walletConnected ? renderConnect() : renderOnDisconnect()}
+          {walletConnected && !accountType ? extendsTime() : renderOnDisconnect() }
+          {walletConnected && isOwner ? renderOwner() : renderOnDisconnect()}
+          {walletConnected && !isAccount ? isLiquidity() : renderOnDisconnect()}          
+                    
           
-          {renderConnect()}
-          {walletConnected && !accountType ? extendsTime() : null }
-          {walletConnected && isOwner ? renderOwner() : null}
-          {walletConnected && !isAccount ? isLiquidity() : null}
           
           
         </div>

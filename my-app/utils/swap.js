@@ -49,7 +49,7 @@ export const swapTokens = async (
     );
     let tx;
     if(maticSelected) {
-        tx = await exchange.maticToAkowoToken(
+        tx = await exchange.maticToAkawoToken(
             tokenToBeReceivedAfterSwap, 
             { value: swapAmountWei, }
         );

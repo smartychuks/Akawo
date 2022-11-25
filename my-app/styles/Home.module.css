@@ -71,6 +71,10 @@
   display: none;
 }
 
+.li:hover{
+  cursor: pointer;
+}
+
 .nav .navlinks ul a.icon{
 margin-left: 80px;
 margin-right: 10px;
