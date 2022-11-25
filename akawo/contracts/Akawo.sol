@@ -9,7 +9,7 @@ contract Akawo{
     mapping(address => uint) public balancesFlexible;
     mapping(address => uint) public balancesFixed;
     // @map: account selected false for flexible and true for fixed
-    mapping(address => bool) public account;
+    mapping(address => uint) public account;
     mapping(address => uint) public time;
     mapping(address => uint) public earnTime;
 
@@ -30,9 +30,9 @@ contract Akawo{
         _token.transferFrom(msg.sender, address(this), _amount);        
         
         // Conditional to check which account to deposit to
-        if(!account[msg.sender]){
+        if(account[msg.sender] == 0){
             balancesFlexible[msg.sender] += _amount;
-        }else{
+        }else if(account[msg.sender] == 1){
             balancesFixed[msg.sender] += _amount;
             
             //lock and add one minute locktime for each deposit
@@ -44,7 +44,7 @@ contract Akawo{
     }
 
     // function to set earn time to 24 hours
-    function setEarnTime() public ifNotPaused{
+    function setEarnTime() public {
         // check if user already in earning circle
         if(earnTime[msg.sender] - block.timestamp < 0){           
             earnTime[msg.sender] = block.timestamp + 60;
@@ -52,21 +52,22 @@ contract Akawo{
     }
 
     // function to get Earn time
-    function getEarnTime () public view returns (uint){
+    function getEarnTime () public view returns (uint val){
         if(earnTime[msg.sender] > 0){
-            return earnTime[msg.sender];
+            val = earnTime[msg.sender];
+            return val;
         }
     }
 
     // function to withdraw
     function withdraw(uint256 _amount, ERC20 token) public{
         _token = ERC20(token);
-        if(!account[msg.sender]){// For flexible account
+        if(account[msg.sender] == 0){// For flexible account
             require(balancesFlexible[msg.sender] > 0, "Flexible Balance is empty");
             require(balancesFlexible[msg.sender] >= _amount, "Insufficient flexible account Balance");   
             _token.transfer(msg.sender, _amount);
             balancesFlexible[msg.sender] -= _amount;
-        }else{// for fixed account
+        }else if(account[msg.sender] == 1){// for fixed account
             require(balancesFixed[msg.sender] > 0, "Fixed saving account Balance is empty");
             require(balancesFixed[msg.sender] >= _amount, "Insufficient fixed account Balance");   
             require(block.timestamp > time[msg.sender], "Time for withdrawal has not reached");
@@ -76,7 +77,7 @@ contract Akawo{
     }
 
     // function to set account type
-    function setAcount(bool _account) public {
+    function setAcount(uint _account) public {
         account[msg.sender] = _account;
     }
 
