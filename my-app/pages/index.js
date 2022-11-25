@@ -66,6 +66,7 @@ export default function Home() {
       setWalletConnected(true);
       await isDOwner();
     }catch(error){
+      alert(error.reason);
       console.log(error);
     }
   }
@@ -170,6 +171,7 @@ export default function Home() {
       }
     } catch (error) {
       setLoading(false);
+      alert(error.reason);
       console.error(error);
     }
   }
@@ -221,6 +223,7 @@ export default function Home() {
       }   
     } catch (error) {
       setLoading(false);
+      alert(error.reason);
       console.error(error);
     }
   }
@@ -245,6 +248,7 @@ export default function Home() {
       setAddressBalance(bal);
       return addressBalance;
     } catch (error) {
+      alert(error.reason);
       console.error(error);
     }
   }
@@ -265,6 +269,7 @@ export default function Home() {
       
       await getBalance();
     } catch (error) {
+      alert(error.reason);
       console.error(error);
     }
   }
@@ -293,6 +298,7 @@ export default function Home() {
         setLoading(false);
       }
     } catch (error) {
+      alert(error.reason);
       console.error(error);
     }
   }
@@ -319,6 +325,7 @@ export default function Home() {
       setReservedAKW(_reservedAKW);
       setMaticBalanceContract(_maticBalanceContract);
     } catch (error) {
+      alert(error.reason);
       console.error(error);
     }
   }
@@ -339,6 +346,7 @@ export default function Home() {
         setSwapAmount("");
       }
     } catch (error) {
+      alert(error.reason);
       console.log(error);
       setLoading(false);
       setSwapAmount("");
@@ -367,6 +375,7 @@ export default function Home() {
         setTokenToBeReceivedAfterSwap(zero);
       }
     } catch (error) {
+      alert(error.reason);
       console.error(error);
     }
   }
@@ -390,6 +399,7 @@ export default function Home() {
         setAddAKWTokens(zero);
       }
     } catch (error) {
+      alert(error.reason);
       console.error(error);
       setLoading(false);
       setAddAKWTokens(zero);
@@ -408,6 +418,7 @@ export default function Home() {
       setRemoveAKW(zero);
       setRemoveMatic(zero);
     } catch (error) {
+      alert(error.reason);
       console.error(error);
       setLoading(false);
       setRemoveAKW(zero);
@@ -437,6 +448,7 @@ export default function Home() {
       setRemoveAKW(_removeAKW);
       console.log(_removeAKW);
     } catch (error) {
+      alert(error.reason);
       console.error(error);
     }
   }
@@ -451,6 +463,7 @@ export default function Home() {
       setWalletConnected(false);
       console.log("walletConnected is ",walletConnected);
     } catch (error) {
+      alert(error.reason);
       console.error(error);
     }
   }
@@ -480,6 +493,7 @@ export default function Home() {
         setWithdrawDate("Flexible account");
       }
     } catch (error) {
+      alert(error.reason);
       console.error(error);
     }
   }
@@ -730,6 +744,7 @@ export default function Home() {
         setIsOwner(true);
       } 
     } catch (error) {
+      alert(error.reason);
       console.log(error);
     }
   }
@@ -764,6 +779,7 @@ export default function Home() {
       await tx.wait();
       setLoading(false);      
     } catch (error) {
+      alert(error.reason);
       console.error(error);
     }
   }
