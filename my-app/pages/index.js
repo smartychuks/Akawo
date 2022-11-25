@@ -21,11 +21,10 @@ export default function Home() {
   const [withdrawDate, setWithdrawDate] = useState("");
   const [unixWithdrawDate, setUnixWithdrawDate] = useState("");
   const [extendTime, setExtendTime] = useState("");
-  const [isAccount, setIsAccount] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
   const [resetAddress, setResetAddress] = useState("");
   const [reRender, setRerender] = useState(false);
-  const [isEarn, setIsEarn] = useState(false);
+  const [whichTab, setWhichTab] = useState("account");
   // The tab user is in
   const [liquidityTab, setLiquidityTab] = useState(false);
   // Initialize the variable
@@ -487,8 +486,8 @@ export default function Home() {
 
   // function to render content if wallet is connected
   const renderConnect = () => {
-    if(walletConnected && isAccount){ 
-
+    
+    if(walletConnected && (whichTab == "account")){ 
       return(
         <div>
           <div className={styles.description}>
@@ -533,7 +532,7 @@ export default function Home() {
           </div>
         </div>
       );
-    }else if(walletConnected && !isAccount){
+    }else if(walletConnected && (whichTab == "trade")){
       return(
         <>
           <div className={styles.swap}>
@@ -551,14 +550,26 @@ export default function Home() {
           </div>
         </>
       )
+    }else if(walletConnected && (whichTab == "earn")){
+      return(
+        <div>
+          <p>Click the button below to earn Akawo for the next 24 hours</p>
+          <button className={styles.button}>Akawo</button>
+        </div>
+      )
     }else{
       renderOnDisconnect();
     }
   };
 
+  // function to render Earn page
+  const renderEarn = () => {
+
+  }
+
   // function to render liquidity and swap tab
   const isLiquidity = () => {
-    if(liquidityTab){
+    if(liquidityTab && (whichTab == "trade")){
       return(
         <div>
           {/* First check if the contract already has tokens, if not
@@ -642,7 +653,7 @@ export default function Home() {
             </div>
         </div>
       )
-    }else{// For the swap tab
+    }else if (!liquidityTab && (whichTab == "trade")){// For the swap tab
       return(
         <div>
           <input
@@ -692,7 +703,7 @@ export default function Home() {
 
   // function to render the input to extend locktime for fixed account
   const extendsTime = () => {
-      if(isAccount){
+      if(whichTab == "account"){
         return(
           <div>
             Set Custom lock Date: 
@@ -798,10 +809,9 @@ export default function Home() {
                 <li className={styles.li} href="#" onClick={()=>setRerender(true)}
                   style={{visibility: reRender ? 'hidden' : 'visible'}}
                 >Connect</li>
-                <li><a href="#" onClick={()=>setIsAccount(true)}>Account</a></li>
-                <li><a href="#" onClick={()=>setIsAccount(false)}>Trade</a></li>
-                <li><a href="#" onClick={()=>setIsEarn(true)}>Earn</a></li>
-                
+                <li><a href="#" onClick={()=>setWhichTab("account")}>Account</a></li>
+                <li><a href="#" onClick={()=>setWhichTab("trade")}>Trade</a></li>
+                <li><a href="#" onClick={()=>setWhichTab("earn")}>Earn</a></li>                
               </ul>
             </div>
           </div>
@@ -811,13 +821,10 @@ export default function Home() {
           <p>Akawo, is a Decentralised Bank. Where you save funds to earn.</p>
 
           {walletConnected ? renderConnect() : renderOnDisconnect()}
-          {walletConnected && !accountType ? extendsTime() : renderOnDisconnect() }
+          {walletConnected ? extendsTime() : renderOnDisconnect() }
           {walletConnected && isOwner ? renderOwner() : renderOnDisconnect()}
-          {walletConnected && !isAccount ? isLiquidity() : renderOnDisconnect()}          
-                    
-          
-          
-          
+          {walletConnected ? isLiquidity() : renderOnDisconnect()}         
+                   
         </div>
         {loading == true ? isLoading() : null}
       </div>
