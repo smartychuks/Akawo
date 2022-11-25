@@ -17,7 +17,7 @@ export default function Home() {
   const [addressBalance, setAddressBalance] = useState(0);// Balance of user saved funds
   const [depositAmount, setDepositAmount] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);
-  const [accountType, setAccountType] = useState(false);
+  const [accountType, setAccountType] = useState(true);
   const [withdrawDate, setWithdrawDate] = useState("");
   const [unixWithdrawDate, setUnixWithdrawDate] = useState("");
   const [extendTime, setExtendTime] = useState("");
@@ -497,20 +497,12 @@ export default function Home() {
             <br />
             <strong>Total Amount in Account:</strong> {addressBalance}
             <br />
-            <label className={styles.label}>
-              Account:
-              <select className={styles.select} name="dropdown" id="dropdown"
-              onChange={async()=>{
-                setLoading(true);
-                setAccountType(!accountType);
-                setAccount();
-                getBalance();
-                setLoading(false);
-              }}>
-                <option value="false">Fixed Account</option>
-                <option value="true">Flexible Account</option>
-              </select><br />
-            </label>
+            
+              Which Account:<br />
+              <button className={styles.button} onClick={()=>{setAccountType(false); setAccount(); getBalance()}}>Fixed Account</button>
+              <button className={styles.button} onClick={()=>{setAccountType(true); setAccount(); getBalance()}}>Flexible Account</button>
+              <br />
+            
             <label className={styles.label}>
               Deposit:
               <input id="deposit" type="number" placeholder="Amount of Tokens"
@@ -667,20 +659,14 @@ export default function Home() {
             className={styles.input}
             value={swapAmount}
           />
-          <select
-            className={styles.select}
-            name="dropdown"
-            id="dropdown"
-            onChange={async () => {
-              setMaticSelected(!maticSelected);
-              // Initialize the values back to zero
-              await _getAmountOfTokensReceivedFromSwap(0);
-              setSwapAmount("");
-            }}
-          >
-            <option value="matic">Matic</option>
-            <option value="akawoToken">Akawo Token</option>
-          </select>
+          
+          <button className={styles.button} onClick={async()=>{
+            setMaticSelected(!maticSelected); 
+            await _getAmountOfTokensReceivedFromSwap(0); 
+            setSwapAmount("")}
+            }>
+              Select {maticSelected ? "Akawo" : "Matic"}
+          </button>
           <br />
           <div>
             {/* Convert the BigNumber to string using the formatEther function from ethers.js */}
