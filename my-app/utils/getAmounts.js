@@ -18,7 +18,7 @@ export const getMaticBalance = async (provider, address, contract = false) => {
 };
 
 // function to get balance of token from user
-export const getAKWTokenBalance = async (provider, address) => {
+export const getAKWTokensBalance = async (provider, address) => {
     try {
         const tokenContract = new Contract(
             TOKEN_CONTRACT_ADDRESS,

@@ -31,7 +31,8 @@ export const getTokensAfterRemove = async (
         //number of tokens to return to the user
         const _removeAKW = akawoTokenReserve.mul(removeLPTokenWei).div(_totalSupply);
         
-        return(_removeMatic, _removeAKW);
+        //console.log(_removeAKW);
+        return{_removeMatic, _removeAKW};
     } catch (error) {
         console.error(error);
     }

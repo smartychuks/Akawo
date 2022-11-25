@@ -7,6 +7,7 @@ export const getAmountOfTokensReceivedFromSwap = async (
     _swapAmountWei, 
     provider, 
     maticSelected,
+    maticBalance,
     reservedAKW
 ) => {
     const exchange = new Contract(

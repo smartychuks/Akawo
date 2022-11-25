@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract Exchange is ERC20{
-    address public akawoTokenAddress;
+    address public akawoTokenAddress = 0xf773e8fAdc25F35d43355a1204218a5E4B8529de;
 
     // inherit ERC20 helps to keep track of the lp tokens
     constructor (address _Akawotoken) ERC20("Akawo LP Token", "AKWLP"){

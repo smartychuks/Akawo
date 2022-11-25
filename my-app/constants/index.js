@@ -491,7 +491,7 @@ export const AKAWO_CONTRACT_ABI=[
     "type": "function"
   }
 ];
-export const EXCHANGE_CONTRACT_ADDRESS="0x10E147d363A9dEe0E636B7dc5A18c5AFd677B36e";
+export const EXCHANGE_CONTRACT_ADDRESS="0x08526aDc58fB9d6462b56751CfeE93bc4b5C0Cb2";
 export const EXCHANGE_CONTRACT_ABI=[
   {
     "inputs": [

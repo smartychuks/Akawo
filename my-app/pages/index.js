@@ -4,9 +4,9 @@ import styles from "../styles/Home.module.css";
 import React, { useEffect, useRef, useState } from "react";
 import Web3Modal from "web3modal";
 import { TOKEN_CONTRACT_ADDRESS, TOKEN_CONTRACT_ABI, AKAWO_CONTRACT_ADDRESS, AKAWO_CONTRACT_ABI } from "../constants";
-import { addLiquidity, calculatedAKW } from "../utils/addLiquidity";
+import { addLiquidity, calculateAKW, calculatedAKW } from "../utils/addLiquidity";
 import { getAKWTokensBalance, getMaticBalance, getLPTokensBalance, getReserveOfAKWTokens } from "../utils/getAmounts";
-import { getTokensAfterRemove, removeLiqudity, removeLiquidity } from "../utils/removeLiquidity";
+import { getTokensAfterRemove, removeLiquidity } from "../utils/removeLiquidity";
 import { swapTokens, getAmountOfTokensReceivedFromSwap } from "../utils/swap";
 
 export default function Home() {
@@ -26,7 +26,7 @@ export default function Home() {
   const [resetAddress, setResetAddress] = useState("");
   //const [addressAKWBalance, setAddressAKWBalance] = useState(0);
   // The tab user is in
-  const [liquidityTab, setLiquidityTab] = useState(true);
+  const [liquidityTab, setLiquidityTab] = useState(false);
   // Initialize the variable
   const zero = BigNumber.from(0);
   // keep track of amount of MAtic the user has
@@ -100,8 +100,10 @@ export default function Home() {
       });
 
       connectWallet();
+      getBalance();
+      getAmounts();
     }
-  }, [walletConnected, accountType]);
+  }, [walletConnected]);
 
   // Function to deposit ERC20 token to contract
   const deposit = async () => {
@@ -291,7 +293,8 @@ export default function Home() {
   const getAmounts = async () => {
     try {
       const provider = await getProviderOrSigner();
-      const address = connectedAddress;
+      const signer = await getProviderOrSigner(true);
+      const address = await signer.getAddress();
       // get amount of Matic the user owns
       const _maticBalance = await getMaticBalance(provider, address);
       // get AKW balance of user
@@ -299,8 +302,10 @@ export default function Home() {
       // get amount of LP tokens owned
       const _lpBalance = await getLPTokensBalance(provider, address);
       // get amount of AKW tokens in contract
+      console.log("okay1");
       const _reservedAKW = await getReserveOfAKWTokens(provider);
       // get the amount of Matic in Contract
+      console.log("okay2");
       const _maticBalanceContract = await getMaticBalance(provider, null, true);
       setMaticBalance(_maticBalance);
       setAKWBalance(_akwBalance);
@@ -424,6 +429,7 @@ export default function Home() {
       );
       setRemoveMatic(_removeMatic);
       setRemoveAKW(_removeAKW);
+      console.log(_removeAKW);
     } catch (error) {
       console.error(error);
     }
@@ -520,21 +526,173 @@ export default function Home() {
           </div>
         </div>
       );
-    };
+    }else if(!isAccount){
+      return(
+        <>
+          <div className={styles.swap}>
+            <div className={styles.swapHeader}>
+              <button className={styles.button} onClick={()=>setLiquidityTab(false)}>Swap</button><span>  </span>
+              <button className={styles.button} onClick={()=>setLiquidityTab(true)}>Liquidity</button>
+              <br />
+              <strong>Akawo Token Balance: </strong>{utils.formatEther(akwBalance)}
+              <br />
+              <strong>Matic Balance: </strong>{utils.formatEther(maticBalance)}
+              <br />
+              <strong>Akawo LP tokens Balance: </strong>{utils.formatEther(lpBalance)}
+              
+            </div>
+          </div>
+        </>
+      )
+    }
   };
+
+  // function to render liquidity and swap tab
+  const isLiquidity = () => {
+    if(liquidityTab){
+      return(
+        <div>
+          {/* First check if the contract already has tokens, if not
+          that means liquidity has not been added, so the user is
+          the first to add liqudity
+          */}
+          {utils.parseEther(reservedAKW.toString()).eq(zero) ? (
+              <div>
+                <input
+                  type="number"
+                  placeholder="Amount of Matic"
+                  onChange={(e) => setAddMatic(e.target.value || "0")}
+                  className={styles.input}
+                /><br />
+                <input
+                  type="number"
+                  placeholder="Amount of Akawo tokens"
+                  onChange={(e) =>
+                    setAddAKWTokens(
+                      BigNumber.from(utils.parseEther(e.target.value || "0"))
+                    )
+                  }
+                  className={styles.input}
+                /> <br />
+                <button className={styles.button} onClick={_addLiquidity}>
+                  Add Liquidity
+                </button>
+              </div>
+            ) : (
+              <div>                
+              {/** Else contract balance is not empty so it means
+               * there is already liquidity created, so we calculate
+               * amount of AKW tokens to be added with respect to MAtic
+               * user wants to add
+               */}
+                <input
+                  type="number"
+                  placeholder="Amount of Matic"
+                  onChange={async (e) => {
+                    setAddMatic(e.target.value || "0");
+                    // calculate the number of AKW tokens that
+                    // can be added given  Matic
+                    const _addAKWTokens = await calculateAKW(
+                      e.target.value || "0",
+                      maticBalanceContract,
+                      reservedAKW
+                    );
+                    setAddAKWTokens(_addAKWTokens);
+                  }}
+                  className={styles.input}
+                /><br />
+                <div className={styles.inputDiv}>
+                  {/* Convert the BigNumber to string using the formatEther function from ethers.js */}
+                  {`You will need ${utils.formatEther(addAKWTokens)} Akawo Tokens
+                  Tokens`}
+                </div>
+                <button className={styles.button} onClick={_addLiquidity}>
+                  Add Liquidity
+                </button>
+              </div>
+            )}
+            <div>
+              <input
+                type="number"
+                placeholder="Amount of LP Tokens"
+                onChange={async (e) => {
+                  setRemoveLPTokens(e.target.value || "0");
+                  // Calculate the amount of Ether and CD tokens that the user would receive
+                  // After he removes `e.target.value` amount of `LP` tokens
+                  await _getTokensAfterRemove(e.target.value || "0");
+                }}
+                className={styles.input}
+              /><br />
+                {/* Convert the BigNumber to string using the formatEther function from ethers.js */}
+                {`You will get ${utils.formatEther(removeAKW)} Akawo Tokens and 
+                ${utils.formatEther(removeMatic)} Matic after removing liquidity`}
+              <br />
+              <button className={styles.button} onClick={_removeLiquidity}>
+                Remove liquidity
+              </button>
+            </div>
+        </div>
+      )
+    }else{// For the swap tab
+      return(
+        <div>
+          <input
+            type="number"
+            placeholder="Amount"
+            onChange={async (e) => {
+              setSwapAmount(e.target.value || "");
+              // Calculate the amount of tokens user would receive after the swap
+              await _getAmountOfTokensReceivedFromSwap(e.target.value || "0");
+            }}
+            className={styles.input}
+            value={swapAmount}
+          />
+          <select
+            className={styles.select}
+            name="dropdown"
+            id="dropdown"
+            onChange={async () => {
+              setMaticSelected(!maticSelected);
+              // Initialize the values back to zero
+              await _getAmountOfTokensReceivedFromSwap(0);
+              setSwapAmount("");
+            }}
+          >
+            <option value="matic">Matic</option>
+            <option value="akawoToken">Akawo Token</option>
+          </select>
+          <br />
+          <div>
+            {/* Convert the BigNumber to string using the formatEther function from ethers.js */}
+            {maticSelected
+              ? `You will get approximately ${utils.formatEther(
+                  tokenToBeReceivedAfterSwap
+                )} Akawo Tokens for swapping matic`
+              : `You will get approximately ${utils.formatEther(
+                  tokenToBeReceivedAfterSwap
+                )} Matic for swapping AKW`}
+          </div>
+          <button className={styles.button} onClick={_swapTokens}>
+            Swap
+          </button>
+        </div>
+      );
+    }
+  }
+
 
   // function to render the input to extend locktime for fixed account
   const extendsTime = () => {
       if(isAccount){
         return(
-          <label className={styles.label}>
+          <div>
             Set Custom lock Date: 
             <input type="datetime-local" id="withdraw" className={styles.input}
               onChange={(e) => setExtendTime(e.target.value || "0")} />
             <button className={styles.button} onClick={increaseLockTime}>
               Set / Extend Date
             </button>
-          </label>
+          </div>
         )
       }
   }
@@ -629,7 +787,7 @@ export default function Home() {
             <div className={styles.navlinks}>
               <ul>
                 <li><a href="#" onClick={()=>setIsAccount(true)}>Account</a></li>
-                <li><a href="#" onClick={()=>setIsAccount(false)}>Swap</a></li>
+                <li><a href="#" onClick={()=>setIsAccount(false)}>Trade</a></li>
                 
               </ul>
             </div>
@@ -639,9 +797,11 @@ export default function Home() {
         <div className={styles.description}>
           <p>Akawo, is a Decentralised Bank. Where you save funds to earn.</p>
           
-          {walletConnected ? renderConnect() : renderOnDisconnect()}
+          {renderConnect()}
           {walletConnected && !accountType ? extendsTime() : null }
           {walletConnected && isOwner ? renderOwner() : null}
+          {walletConnected && !isAccount ? isLiquidity() : null}
+          
           
         </div>
         {loading == true ? isLoading() : null}
