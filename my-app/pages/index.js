@@ -17,7 +17,7 @@ export default function Home() {
   const [addressBalance, setAddressBalance] = useState(0);// Balance of user saved funds
   const [depositAmount, setDepositAmount] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);
-  const [accountType, setAccountType] = useState(true);
+  const [accountType, setAccountType] = useState(1);
   const [withdrawDate, setWithdrawDate] = useState("");
   const [unixWithdrawDate, setUnixWithdrawDate] = useState("");
   const [extendTime, setExtendTime] = useState("");
@@ -128,7 +128,7 @@ export default function Home() {
         TOKEN_CONTRACT_ABI, 
         signer
         );
-        if(accountType){// For flexible account
+        if(!(accountType == 0)){// For flexible account
         let tx;
         // Aprove the contract to access user's token
         tx = await tokenContract.approve(
@@ -147,7 +147,7 @@ export default function Home() {
         await getBalance();
         //await getLockTime();
         setLoading(false);
-      }else if(!accountType){// For fixed account
+      }else if(!(accountType == 1)){// For fixed account
         let tx;
         // Aprove the contract to access user's token
         tx = await tokenContract.approve(
@@ -187,12 +187,13 @@ export default function Home() {
         );
 
       // Check account type before withdrawal
-      if (accountType){//for flexible
+      if (!(accountType === 0)){//for flexible
         let tx = await akawoContract.withdraw(
           withdrawAmount.toString(), 
           TOKEN_CONTRACT_ADDRESS
           );        
         setLoading(true);
+        await setAccount(accountType);
         await tx.wait();
         await getBalance();
         // setWithdrawDate("Not available") if balance empty
@@ -200,7 +201,7 @@ export default function Home() {
           setWithdrawDate("Not Available");
         }
         setLoading(false); 
-      }else if(!accountType){// for fixed account
+      }else if(!(accountType === 1)){// for fixed account
         // Check if its time to withdraw
         if(unixWithdrawDate > Date.now()/1000){
           alert("You can only withdraw after funds has been unlocked")
@@ -210,6 +211,7 @@ export default function Home() {
             TOKEN_CONTRACT_ADDRESS
             );        
           setLoading(true);
+          await setAccount(accountType);
           await tx.wait();
           await getBalance();
           await getLockTime();
@@ -489,7 +491,7 @@ export default function Home() {
       withdrawDate = new Date (withdrawDate * 1000);
       setWithdrawDate(withdrawDate.toString());
 
-      if(accountType){
+      if((accountType === 1)){
         setWithdrawDate("Flexible account");
       }
     } catch (error) {
@@ -513,8 +515,8 @@ export default function Home() {
             <br />
             
               Which Account:<br />
-              <button className={styles.button} onClick={()=>{setAccountType(false); setAccount(); getBalance()}}>Fixed Account</button>
-              <button className={styles.button} onClick={()=>{setAccountType(true); setAccount(); getBalance()}}>Flexible Account</button>
+              <button className={styles.button} onClick={()=>{setAccountType(1); setAccount(); getBalance()}}>Flexible Account</button>
+              <button className={styles.button} onClick={()=>{setAccountType(0); setAccount(); getBalance()}}>Fixed Account</button>
               <br />
             
             <label className={styles.label}>
@@ -703,7 +705,7 @@ export default function Home() {
 
   // function to render the input to extend locktime for fixed account
   const extendsTime = () => {
-      if((whichTab == "account") && !accountType){
+      if((whichTab == "account") && !(accountType === 1)){
         return(
           <div>
             Set Custom lock Date: 

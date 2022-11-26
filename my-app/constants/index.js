@@ -287,7 +287,7 @@ export const TOKEN_CONTRACT_ABI=[
       "type": "function"
     }
   ];
-export const AKAWO_CONTRACT_ADDRESS="0x8559bf535c33632f73689c69E52C5A395fa0cce6";
+export const AKAWO_CONTRACT_ADDRESS="0xE434cB2F6202a762ED6a309D18e169bf99C9D14c";
 export const AKAWO_CONTRACT_ABI=[
   {
     "inputs": [],
@@ -305,9 +305,9 @@ export const AKAWO_CONTRACT_ABI=[
     "name": "account",
     "outputs": [
       {
-        "internalType": "bool",
+        "internalType": "uint256",
         "name": "",
-        "type": "bool"
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -372,6 +372,25 @@ export const AKAWO_CONTRACT_ABI=[
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "earnTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bool",
         "name": "_account",
         "type": "bool"
@@ -382,6 +401,19 @@ export const AKAWO_CONTRACT_ABI=[
       {
         "internalType": "uint256",
         "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getEarnTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "val",
         "type": "uint256"
       }
     ],
@@ -443,12 +475,19 @@ export const AKAWO_CONTRACT_ABI=[
   {
     "inputs": [
       {
-        "internalType": "bool",
+        "internalType": "uint256",
         "name": "_account",
-        "type": "bool"
+        "type": "uint256"
       }
     ],
     "name": "setAcount",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "setEarnTime",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
