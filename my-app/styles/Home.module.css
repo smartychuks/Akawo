@@ -124,11 +124,19 @@ margin-right: 10px;
   padding: 1.5rem;
 }
 
+.button1{
+  border-radius: 50%;
+  background-color: #0a0a23;
+  border: solid #0a0a23;
+  color: #ffffff;
+  padding: 1.5rem;
+}
+
 .select{
   border-radius: 1.1rem;
 }
 
-.button:hover{
+.button,.button1:hover{
   background-color: #1b1b32;
   cursor: pointer;
 }

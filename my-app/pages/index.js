@@ -515,7 +515,6 @@ export default function Home() {
 
       let _earnTime = await akawoContract.setEarnTime();
       
-      console.log("okaY");
       setLoading(true);
       await _earnTime.wait();
       await getEarnTime();
@@ -535,12 +534,17 @@ export default function Home() {
         AKAWO_CONTRACT_ADDRESS,
         AKAWO_CONTRACT_ABI,
         signer
-      );
+      );setLoading(true);
       let _earnTime = await akawoContract.getEarnTime();
-      setLoading(true);    
+      setLoading(false);  
       _earnTime = new Date (_earnTime * 1000);
+      
+      if ((earnTime <= Date.now())){
+        setEarnTime("Click the button again to get next earning session or to start new session");
+      }else{        
       setEarnTime(_earnTime.toString());
-      setLoading(false);
+      }
+      //setEarnTime(_earnTime.toString());
     } catch (error) {
       alert(error.reason);
       console.error(error)
@@ -610,8 +614,8 @@ export default function Home() {
       return(
         <div>
           <p>Click the button below to earn Akawo for the next 24 hours</p>
-          <button className={styles.button} onClick={()=>{earnTimeSet(); getEarnTime();}}>Akawo</button>
-          <p>click again in: {earnTime}</p>
+          <button className={styles.button1} onClick={()=>{earnTimeSet(); getEarnTime();}}>Earn Akawo</button>
+          <p>{earnTime}</p>
         </div>
       )
     }else{
