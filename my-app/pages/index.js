@@ -25,6 +25,7 @@ export default function Home() {
   const [resetAddress, setResetAddress] = useState("");
   const [reRender, setRerender] = useState(false);
   const [whichTab, setWhichTab] = useState("account");
+  const [earnTime, setEarnTime] = useState("");
   // The tab user is in
   const [liquidityTab, setLiquidityTab] = useState(false);
   // Initialize the variable
@@ -502,6 +503,51 @@ export default function Home() {
     }
   }
 
+  // fucntion to set Earn time
+  const earnTimeSet = async () => {
+    try {
+      const signer = await getProviderOrSigner(true);
+      const akawoContract = new Contract(
+        AKAWO_CONTRACT_ADDRESS,
+        AKAWO_CONTRACT_ABI,
+        signer
+      );
+
+      let _earnTime = await akawoContract.setEarnTime();
+      
+      console.log("okaY");
+      setLoading(true);
+      await _earnTime.wait();
+      await getEarnTime();
+      setLoading(false);
+    } catch (error) {
+      alert(error.reason);
+      console.error(error);
+      setLoading(false);
+    }
+  }
+
+  //function to get time for earning session
+  const getEarnTime = async () => {
+    try {
+      const signer = await getProviderOrSigner(true);
+      const akawoContract = new Contract(
+        AKAWO_CONTRACT_ADDRESS,
+        AKAWO_CONTRACT_ABI,
+        signer
+      );
+      let _earnTime = await akawoContract.getEarnTime();
+      setLoading(true);    
+      _earnTime = new Date (_earnTime * 1000);
+      setEarnTime(_earnTime.toString());
+      setLoading(false);
+    } catch (error) {
+      alert(error.reason);
+      console.error(error)
+    }
+  }
+
+
   // function to render content if wallet is connected
   const renderConnect = () => {
     
@@ -564,7 +610,8 @@ export default function Home() {
       return(
         <div>
           <p>Click the button below to earn Akawo for the next 24 hours</p>
-          <button className={styles.button}>Akawo</button>
+          <button className={styles.button} onClick={()=>{earnTimeSet(); getEarnTime();}}>Akawo</button>
+          <p>click again in: {earnTime}</p>
         </div>
       )
     }else{

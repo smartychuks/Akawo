@@ -37,7 +37,7 @@ contract Akawo{
             
             //lock and add one minute locktime for each deposit
             if (locktime < block.timestamp){
-                locktime = block.timestamp + 60;
+                locktime = block.timestamp + 1 minutes;
                 time[msg.sender] += locktime;
             }
         }
@@ -45,10 +45,9 @@ contract Akawo{
 
     // function to set earn time to 24 hours
     function setEarnTime() public {
-        // check if user already in earning circle
-        if(earnTime[msg.sender] - block.timestamp < 0){           
-            earnTime[msg.sender] = block.timestamp + 60;
-        }
+        require(block.timestamp > earnTime[msg.sender], 'Your earning session has not expired');
+        // check if user already in earning circle     
+        earnTime[msg.sender] = block.timestamp + 1 days;
     }
 
     // function to get Earn time
