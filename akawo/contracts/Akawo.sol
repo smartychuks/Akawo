@@ -12,6 +12,7 @@ contract Akawo{
     mapping(address => uint) public account;
     mapping(address => uint) public time;
     mapping(address => uint) public earnTime;
+    
 
 
     // modifier for only owner
@@ -20,12 +21,19 @@ contract Akawo{
         _;
     }
 
+    // modifier to ensure only holders of AKW can access the features
+    modifier onlyHolders{
+        address token = 0xf773e8fAdc25F35d43355a1204218a5E4B8529de;
+        require(ERC20(token).balanceOf(msg.sender) >= 1, "You need at least 1 AKW token in wallet");
+        _;
+    }
+
     constructor(){
         _owner = msg.sender;
     }
 
     //function to deposit
-    function deposit(uint256 _amount, ERC20 token) public{
+    function deposit(uint256 _amount, ERC20 token) public onlyHolders{
         _token = ERC20(token);
         _token.transferFrom(msg.sender, address(this), _amount);        
         
@@ -44,14 +52,14 @@ contract Akawo{
     }
 
     // function to set earn time to 24 hours
-    function setEarnTime() public {
+    function setEarnTime() public onlyHolders{
         require(block.timestamp > earnTime[msg.sender], 'Your earning session has not expired');
         // check if user already in earning circle     
         earnTime[msg.sender] = block.timestamp + 1 days;
     }
 
     // function to get Earn time
-    function getEarnTime () public view returns (uint val){
+    function getEarnTime () public view onlyHolders returns (uint val) {
         if(earnTime[msg.sender] > 0){
             val = earnTime[msg.sender];
             return val;
@@ -59,7 +67,7 @@ contract Akawo{
     }
 
     // function to withdraw
-    function withdraw(uint256 _amount, ERC20 token) public{
+    function withdraw(uint256 _amount, ERC20 token) public onlyHolders{
         _token = ERC20(token);
         if(account[msg.sender] == 0){// For flexible account
             require(balancesFlexible[msg.sender] > 0, "Flexible Balance is empty");
@@ -76,12 +84,12 @@ contract Akawo{
     }
 
     // function to set account type
-    function setAcount(uint _account) public {
+    function setAcount(uint _account) public onlyHolders{
         account[msg.sender] = _account;
     }
 
     // function to get user balance
-    function getBalances(bool _account) public view returns (uint){
+    function getBalances(bool _account) public view onlyHolders returns (uint) {
         if(!_account){//flexible account balance
             return balancesFlexible[msg.sender];
         }else{// Fixed account balance
@@ -90,12 +98,12 @@ contract Akawo{
     }
 
     // function to get amount of time its locked
-    function getLockTime() public view returns(uint){
+    function getLockTime() public view onlyHolders returns(uint){ 
         return time[msg.sender];
     }
 
     //Function to increase locktime
-    function increaseLockTime(uint _secondsToIncrease) public {
+    function increaseLockTime(uint _secondsToIncrease) public onlyHolders{
         time[msg.sender] += _secondsToIncrease; 
     }
 
