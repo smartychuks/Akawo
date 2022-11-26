@@ -8,7 +8,7 @@ contract Akawo{
     uint locktime = 0;
     mapping(address => uint) public balancesFlexible;
     mapping(address => uint) public balancesFixed;
-    // @map: account selected false for flexible and true for fixed
+    // @map: account selected 0 for flexible and 1 for fixed
     mapping(address => uint) public account;
     mapping(address => uint) public time;
     mapping(address => uint) public earnTime;
