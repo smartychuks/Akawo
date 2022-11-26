@@ -493,6 +493,8 @@ export default function Home() {
 
       if((accountType === 1)){
         setWithdrawDate("Flexible account");
+      }else if(withdrawDate <= Date.now()){
+        setWithdrawDate("Withdrawal time has reached or not set");
       }
     } catch (error) {
       alert(error.reason);
