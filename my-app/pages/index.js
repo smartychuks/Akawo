@@ -105,8 +105,6 @@ export default function Home() {
       });
 
       connectWallet();
-      getBalance();
-      getAmounts();
     }
   }, [walletConnected]);
 
@@ -344,7 +342,7 @@ export default function Home() {
         setSwapAmount("");
       }
     } catch (error) {
-      alert(error.reason);
+      //alert(error.reason);
       console.log(error);
       setLoading(false);
       setSwapAmount("");
@@ -568,7 +566,7 @@ export default function Home() {
             
             <label className={styles.label}>
               Deposit:
-              <input id="deposit" type="number" placeholder="Amount of Tokens"
+              <input id="deposit" type="number" placeholder="Amount of AKW Tokens"
               onChange={(e) => setDepositAmount(utils.parseEther(e.target.value || "0"))}
               className={styles.input} />
               <button className={styles.button} onClick={deposit}>Close Vault</button>
@@ -577,7 +575,7 @@ export default function Home() {
             <br /><br />
             <label className={styles.label}>
               Withdraw:
-              <input id="withdraw" type="number" placeholder="Amount of Tokens"
+              <input id="withdraw" type="number" placeholder="Amount of AKW Tokens"
               onChange={(e) => setWithdrawAmount(utils.parseEther(e.target.value || "0"))}
               className={styles.input} />
               <button className={styles.button} onClick={withdraw}>
@@ -858,8 +856,8 @@ export default function Home() {
             </div>
             <div className={styles.navlinks}>
               <ul>
-                <li><a href="#" onClick={()=>setWhichTab("account")}>Account</a></li>
-                <li><a href="#" onClick={()=>setWhichTab("trade")}>Trade</a></li>
+                <li><a href="#" onClick={()=>{setWhichTab("account"); getBalance()}}>Account</a></li>
+                <li><a href="#" onClick={()=>{setWhichTab("trade"); getAmounts()}}>Trade</a></li>
                 <li><a href="#" onClick={()=>setWhichTab("earn")}>Earn</a></li>                
               </ul>
             </div>
