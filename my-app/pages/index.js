@@ -23,7 +23,6 @@ export default function Home() {
   const [extendTime, setExtendTime] = useState("");
   const [isOwner, setIsOwner] = useState(false);
   const [resetAddress, setResetAddress] = useState("");
-  const [reRender, setRerender] = useState(false);
   const [whichTab, setWhichTab] = useState("account");
   const [earnTime, setEarnTime] = useState("");
   // The tab user is in
@@ -61,13 +60,12 @@ export default function Home() {
 
   // Function to connect to the wallet
   const connectWallet = async() => {
-    try {
-      
+    try {      
       await getProviderOrSigner();
       setWalletConnected(true);
       await isDOwner();
     }catch(error){
-      alert(error.reason);
+      //alert(error.reason);
       console.log(error);
     }
   }
@@ -81,10 +79,7 @@ export default function Home() {
 
     //check if metamask is installed
     if (!window.ethereum) {
-      enqueueSnackbar("You have to install a wallet like Metamask!", {
-        variant: "error",
-        preventDuplicate: true,
-      });
+      alert("You have to install a wallet like Metamask!");
     }
     // check if user connected to mumbai
     const { chainId } = await web3Provider.getNetwork();
@@ -113,7 +108,7 @@ export default function Home() {
       getBalance();
       getAmounts();
     }
-  }, [walletConnected, reRender]);
+  }, [walletConnected]);
 
   // Function to deposit ERC20 token to contract
   const deposit = async () => {
@@ -542,7 +537,7 @@ export default function Home() {
       if ((earnTime <= Date.now())){
         setEarnTime("Click the button again to get next earning session or to start new session");
       }else{        
-      setEarnTime(_earnTime.toString());
+      setEarnTime("Come back: "+_earnTime.toString());
       }
       //setEarnTime(_earnTime.toString());
     } catch (error) {
@@ -564,10 +559,10 @@ export default function Home() {
             <strong>Wallet Address Connected: </strong><small><i> {connectedAddress} </i></small>
             <br />
             <strong>Total Amount in Account:</strong> {addressBalance}
-            <br />
+            <br /><br />
             
-              Which Account:<br />
-              <button className={styles.button} onClick={()=>{setAccountType(1); setAccount(); getBalance()}}>Flexible Account</button>
+              Select Account:<br />
+              <button className={styles.button} onClick={()=>{setAccountType(1); setAccount(); getBalance()}}>Flexible Account</button><span> </span>
               <button className={styles.button} onClick={()=>{setAccountType(0); setAccount(); getBalance()}}>Fixed Account</button>
               <br />
             
@@ -863,9 +858,6 @@ export default function Home() {
             </div>
             <div className={styles.navlinks}>
               <ul>
-                <li className={styles.li} href="#" onClick={()=>setRerender(true)}
-                  style={{visibility: reRender ? 'hidden' : 'visible'}}
-                >Connect</li>
                 <li><a href="#" onClick={()=>setWhichTab("account")}>Account</a></li>
                 <li><a href="#" onClick={()=>setWhichTab("trade")}>Trade</a></li>
                 <li><a href="#" onClick={()=>setWhichTab("earn")}>Earn</a></li>                

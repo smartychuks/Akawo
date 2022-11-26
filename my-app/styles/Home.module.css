@@ -136,7 +136,11 @@ margin-right: 10px;
   border-radius: 1.1rem;
 }
 
-.button,.button1:hover{
+.button:hover{
+  background-color: #1b1b32;
+  cursor: pointer;
+}
+.button1:hover{
   background-color: #1b1b32;
   cursor: pointer;
 }
