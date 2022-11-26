@@ -287,7 +287,7 @@ export const TOKEN_CONTRACT_ABI=[
       "type": "function"
     }
   ];
-export const AKAWO_CONTRACT_ADDRESS="0x9e482b67D03a4324441278715137ec0019B3783f";
+export const AKAWO_CONTRACT_ADDRESS="0x0bd3C3415A258BbC1B7eEB364539F5E79FE23601";
 export const AKAWO_CONTRACT_ABI=[
   {
     "inputs": [],
