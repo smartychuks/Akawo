@@ -532,7 +532,7 @@ export default function Home() {
       setLoading(false);  
       _earnTime = new Date (_earnTime * 1000);
       
-      if ((earnTime <= Date.now())){
+      if ((earnTime < Date.now())){
         setEarnTime("Click the button again to get next earning session or to start new session");
       }else{        
       setEarnTime("Come back: "+_earnTime.toString());
@@ -569,7 +569,7 @@ export default function Home() {
               <input id="deposit" type="number" placeholder="Amount of AKW Tokens"
               onChange={(e) => setDepositAmount(utils.parseEther(e.target.value || "0"))}
               className={styles.input} />
-              <button className={styles.button} onClick={deposit}>Close Vault</button>
+              <button className={styles.button} onClick={()=>{deposit(); getBalance(); getBalance();}}>Close Vault</button>
                             
             </label>
             <br /><br />
@@ -578,7 +578,7 @@ export default function Home() {
               <input id="withdraw" type="number" placeholder="Amount of AKW Tokens"
               onChange={(e) => setWithdrawAmount(utils.parseEther(e.target.value || "0"))}
               className={styles.input} />
-              <button className={styles.button} onClick={withdraw}>
+              <button className={styles.button} onClick={()=>{withdraw(); getBalance()}}>
                 Open Vault
               </button>
             </label>
@@ -590,7 +590,7 @@ export default function Home() {
         <>
           <div className={styles.swap}>
             <div className={styles.swapHeader}>
-              <button className={styles.button} onClick={()=>setLiquidityTab(false)}>Swap</button><span>  </span>
+              <button className={styles.button} onClick={()=>{setLiquidityTab(false); getAmounts()}}>Swap</button><span>  </span>
               <button className={styles.button} onClick={()=>setLiquidityTab(true)}>Liquidity</button>
               <br />
               <strong>Akawo Token Balance: </strong>{utils.formatEther(akwBalance)}
@@ -648,7 +648,7 @@ export default function Home() {
                   }
                   className={styles.input}
                 /> <br />
-                <button className={styles.button} onClick={_addLiquidity}>
+                <button className={styles.button} onClick={()=>{_addLiquidity(); getAmounts()}}>
                   Add Liquidity
                 </button>
               </div>
@@ -877,8 +877,7 @@ export default function Home() {
       </div>
 
       <footer className={styles.footer}>
-        Made with &#10084; by <a href="https://twitter.com/goldenchuks4 " target="_blank" rel="noreferrer"> @iSmarty</a>
-        
+        Made with &#10084; by <a href="https://twitter.com/goldenchuks4 " target="_blank" rel="noreferrer"> @iSmarty</a>        
       </footer>
 
     </div>
