@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
-// import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/ERC20Detailed.sol";
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+//import "openzeppelin/contracts/token/ERC20/ERC20Detailed.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 // import "openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol";
 
 contract Akawo{
@@ -12,11 +12,13 @@ contract Akawo{
 
     IERC20 public immutable tokenAddress;
     // Timestamp when reward finishes
-    uint256 public periodFinish = 0;
+    uint256 public periodFinish = earnTime[msg.sender];
     //Reward to be paid per second
     uint256 public rewardRate = 0;
     // Duration of rewards to be paid out
     uint256 public rewardsDuration = 1 days;
+
+    uint256 one = 1;
     
     uint256 public lastUpdateTime;
     // reward to be paid per token
@@ -30,7 +32,9 @@ contract Akawo{
     mapping(address => uint256) public balancesFixed;
     // @map: account selected 0 for flexible and 1 for fixed
     mapping(address => uint256) public account;
+    // Keep track of amount of time token is locked for an address
     mapping(address => uint256) public time;
+    // time for earnings to be accrued, usually 24hours
     mapping(address => uint256) public earnTime;
     mapping(address => uint256) public userRewardPerTokenPaid;
     // Rewards for each address
@@ -59,8 +63,8 @@ contract Akawo{
         rewardPerTokenStored = rewardPerToken();
         lastUpdateTime = lastTimeRewardApplicable();
         if (_account != address(0)) {
-            rewards[account] = earned(_account);
-            userRewardPerTokenPaid[account] = rewardPerTokenStored;
+            rewards[_account] = earned();
+            userRewardPerTokenPaid[_account] = rewardPerTokenStored;
         }
         _;
     }
@@ -71,17 +75,17 @@ contract Akawo{
     }
 
     //function to deposit
-    function deposit(uint256 _amount) public updateReward onlyHolders{
+    function deposit(uint256 _amount) public updateReward(msg.sender) onlyHolders{
         require(_amount > 0, "Cannot Deposit 0");
        
         tokenAddress.transferFrom(msg.sender, address(this), _amount);        
         
         // Conditional to check which account to deposit to
         if(account[msg.sender] == 0){
-            rewardRates[0] = 1.div(9);
+            rewardRates[0] = one.div(9);
             balancesFlexible[msg.sender] = balancesFlexible[msg.sender].add(_amount);
         }else if(account[msg.sender] == 1){
-            rewardRates[1] = 1.div(5);
+            rewardRates[1] = one.div(5);
             balancesFixed[msg.sender] = balancesFixed[msg.sender].add(_amount);
             //lock and add one minute locktime for each deposit
             if (locktime < block.timestamp){
@@ -179,11 +183,11 @@ contract Akawo{
 
     // function to check and return if owner
     function isDOwner() public view returns (address) {
-        return _owner;
+        return owner;
     }
 
     // Funtion to get user's total balance of amount locked
-    function totalSupply external view returns (uint256) {
+    function totalSupply() external view returns (uint256) {
         return _totalSupply;
     }
     
@@ -200,12 +204,13 @@ contract Akawo{
             return rewardPerTokenStored;
         }
         return rewardPerTokenStored.add(lastTimeRewardApplicable()
-        .sub(lastUpdateTime).mul(rewardRate).mul(1e18)div(_totalSupply));
+        .sub(lastUpdateTime).mul(rewardRate).mul(1e18).div(_totalSupply));
     }
 
-    function earned(address account) public view returns (uint256) {
-        return _balances[account].mul(rewardPerToken().sub(userRewardPerTokenPaid[account]))
-        .div(1e18).add(rewards[account]);
+    // Function that calculates how much token user has earned
+    function earned() public view returns (uint256) {
+        return _balances[msg.sender].mul(rewardPerToken().sub(userRewardPerTokenPaid[msg.sender]))
+        .div(1e18).add(rewards[msg.sender]);
     }
 
     function getRewardForDuration() external view returns (uint256) {
