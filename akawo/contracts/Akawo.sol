@@ -42,8 +42,8 @@ contract Akawo{
     // Mapping for rates for different accounts
     mapping(uint256 => uint256) public rewardRates;
 
-    uint256 private _totalSupply;
-    mapping(address => uint256) private _balances;    
+    uint256 public _totalSupply = 7000000;
+    mapping(address => uint256) public _balances;    
 
 
     // modifier for only owner
@@ -191,12 +191,12 @@ contract Akawo{
         return _totalSupply;
     }
     
-    function balanceOf(address account) external view returns (uint256) {
-        return _balances[account];
+    function balanceOf(address _Account) external view returns (uint256) {
+        return _balances[_Account];
     }
 
     function lastTimeRewardApplicable() public view returns (uint256) {
-        return block.timestamp < periodFinish ? block.timestamp : periodFinish;
+        return block.timestamp <= periodFinish ? block.timestamp : periodFinish;
     }
 
     function rewardPerToken() public view returns (uint256) {
@@ -232,6 +232,10 @@ contract Akawo{
 
         lastUpdateTime = block.timestamp;
         periodFinish = block.timestamp.add(rewardsDuration);
+    }
+
+    function getTotalSupply() public view returns(uint256){
+        return _totalSupply;
     }
 
 
