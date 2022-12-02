@@ -8,6 +8,7 @@ import { addLiquidity, calculateAKW } from "../utils/addLiquidity";
 import { getAKWTokensBalance, getMaticBalance, getLPTokensBalance, getReserveOfAKWTokens } from "../utils/getAmounts";
 import { getTokensAfterRemove, removeLiquidity } from "../utils/removeLiquidity";
 import { swapTokens, getAmountOfTokensReceivedFromSwap } from "../utils/swap";
+import { formatEther } from "ethers/lib/utils";
 
 export default function Home() {
 
@@ -55,6 +56,8 @@ export default function Home() {
   const [tokenToBeReceivedAfterSwap, setTokenToBeReceivedAfterSwap] = useState(zero);
   // check user's action if want to swap Matic or AKW token
   const [maticSelected, setMaticSelected] = useState(true);
+  // keep track of user earned balance
+  const [earned, setEarned] = useState(0);
   // Create a reference to web3modal to use to connect to metamask
   const web3ModalRef = useRef();
 
@@ -132,10 +135,7 @@ export default function Home() {
         setLoading(true);
         await tx.wait()//wait for transaction to be mined
         setLoading(false);
-        tx = await akawoContract.deposit(
-          depositAmount.toString(), 
-          TOKEN_CONTRACT_ADDRESS
-          );
+        tx = await akawoContract.deposit(depositAmount.toString());
         setLoading(true);
         await tx.wait();
         await getBalance();
@@ -154,10 +154,7 @@ export default function Home() {
         //let tx2 = await akawoContract.setAcount(accountType);
         setLoading(true);
         //await tx2.wait();
-        tx = await akawoContract.deposit(
-          depositAmount.toString(), 
-          TOKEN_CONTRACT_ADDRESS
-          );                
+        tx = await akawoContract.deposit(depositAmount.toString());                
         await tx.wait();        
         await getBalance();
         await getLockTime();
@@ -182,10 +179,7 @@ export default function Home() {
 
       // Check account type before withdrawal
       if (!(accountType === 0)){//for flexible
-        let tx = await akawoContract.withdraw(
-          withdrawAmount.toString(), 
-          TOKEN_CONTRACT_ADDRESS
-          );        
+        let tx = await akawoContract.withdraw(withdrawAmount.toString());        
         setLoading(true);
         await setAccount(accountType);
         await tx.wait();
@@ -200,10 +194,7 @@ export default function Home() {
         if(unixWithdrawDate > Date.now()/1000){
           alert("You can only withdraw after funds has been unlocked")
         }else{
-          let tx = await akawoContract.withdraw(
-            withdrawAmount.toString(), 
-            TOKEN_CONTRACT_ADDRESS
-            );        
+          let tx = await akawoContract.withdraw(withdrawAmount.toString());        
           setLoading(true);
           await setAccount(accountType);
           await tx.wait();
@@ -235,14 +226,20 @@ export default function Home() {
         AKAWO_CONTRACT_ABI, 
         signer
       );
-      let bal = await akawoContract.getBalances(accountType);
+
+      let bal;
+      if (!(accountType === 0)){// for flexible
+        bal = await akawoContract.getBalances(0);
+      }else if(!(accountType === 1)){
+        bal = await akawoContract.getBalances(1);
+      }
       //let balToken = await akawoContract.balanceOf(connectedAddress);
       // convert from wei to user readable format
       bal = utils.formatEther(bal);
       //balToken = utils.formatEther(balToken);
       //setAddressAKWBalance(balToken);
       setAddressBalance(bal);
-      return addressBalance;
+      //return addressBalance;
     } catch (error) {
       alert(error.reason);
       console.error(error);
@@ -519,6 +516,25 @@ export default function Home() {
     }
   }
 
+  //function to get earned amount
+const getEarned = async () => {
+  try {
+    const provider = await getProviderOrSigner(true);
+    const akawoContract = new Contract(
+      AKAWO_CONTRACT_ADDRESS,
+      AKAWO_CONTRACT_ABI,
+      provider
+    );
+    let _earned = await akawoContract.earned();
+    _earned = utils.formatEther(_earned.toString());
+    console.log(_earned);
+    setEarned(_earned);
+  } catch (error) {
+    alert(error.reason);
+    console.error(error);
+  }
+}
+
   //function to get time for earning session
   const getEarnTime = async () => {
     try {
@@ -527,7 +543,8 @@ export default function Home() {
         AKAWO_CONTRACT_ADDRESS,
         AKAWO_CONTRACT_ABI,
         signer
-      );setLoading(true);
+      );
+      setLoading(true);
       let _earnTime = await akawoContract.getEarnTime();
       setLoading(false);  
       _earnTime = new Date (_earnTime * 1000);
@@ -537,10 +554,29 @@ export default function Home() {
       }else{        
       setEarnTime("Come back: "+_earnTime.toString());
       }
-      //setEarnTime(_earnTime.toString());
+      setEarnTime(_earnTime.toString());
     } catch (error) {
       alert(error.reason);
       console.error(error)
+    }
+  }
+
+  // function to withdraw earnings
+  const withdrawEarned = async () => {
+    try {
+      const signer = await getProviderOrSigner(true);
+      const akawoContract = new Contract(
+        AKAWO_CONTRACT_ADDRESS,
+        AKAWO_CONTRACT_ABI,
+        signer
+      );
+      setLoading(true);
+      const tx = await akawoContract.withdrawEarn();
+      await tx.wait();
+      setLoading(false);      
+    } catch (error) {
+      alert(error.reason);
+      console.log(error);
     }
   }
 
@@ -552,7 +588,7 @@ export default function Home() {
       return(
         <div>
           <div className={styles.description}>
-            <strong><a className={styles.descriptionlink} href="#" onClick={getLockTime}>Click here to check withdrawal Date: </a>  </strong> {withdrawDate}
+            <strong><a className={styles.descriptionlink} href="#" onClick={()=>{getLockTime(); getBalance()}}>Click here to check withdrawal Date: </a>  </strong> {withdrawDate}
             <br />
             <strong>Wallet Address Connected: </strong><small><i> {connectedAddress} </i></small>
             <br />
@@ -569,7 +605,7 @@ export default function Home() {
               <input id="deposit" type="number" placeholder="Amount of AKW Tokens"
               onChange={(e) => setDepositAmount(utils.parseEther(e.target.value || "0"))}
               className={styles.input} />
-              <button className={styles.button} onClick={()=>{deposit(); getBalance(); getBalance();}}>Close Vault</button>
+              <button className={styles.button} onClick={()=>{deposit(); getBalance();}}>Close Vault</button>
                             
             </label>
             <br /><br />
@@ -607,8 +643,16 @@ export default function Home() {
       return(
         <div>
           <p>Click the button below to earn Akawo for the next 24 hours</p>
-          <button className={styles.button1} onClick={()=>{earnTimeSet(); getEarnTime();}}>Earn Akawo</button>
-          <p>{earnTime}</p>
+          
+            
+            <button className={styles.button1} onClick={()=>{earnTimeSet(); getEarnTime(); getEarned();}}>Earn Akawo</button>
+            <p>{earnTime}</p>
+          {// Conditional used to display the withdraw earned button
+            earnTime >= Date.now() ?
+            <button className={styles.button1} onClick={()=>withdrawEarned()}>Withdraw Earned Tokens</button> : null
+          }
+            You have earned: {earned}
+          
         </div>
       )
     }else{

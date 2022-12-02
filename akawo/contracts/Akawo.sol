@@ -25,6 +25,7 @@ contract Akawo{
     uint256 public rewardPerTokenStored;
     address public owner;
     uint256 locktime = 0;
+    uint256 public _totalSupply;
 
     // Storage to keep track of balance of each address in flexible account
     mapping(address => uint256) public balancesFlexible;
@@ -42,7 +43,6 @@ contract Akawo{
     // Mapping for rates for different accounts
     mapping(uint256 => uint256) public rewardRates;
 
-    uint256 public _totalSupply = 7000000;
     mapping(address => uint256) public _balances;    
 
 
