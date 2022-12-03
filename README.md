@@ -17,7 +17,6 @@ using AKW.
 - Users use the swap tab to add Liquidity, or swap their (BTC, ETH and MATIC) for AKW tokens or swap AKW Tokens for (BTC, ETH and MATIC).
 - There is a trading fee of 1% on each swap, this fee is distributed among those that added liquidity for the pair.
 - Users earn by showing activeness on the platform every 24 hours by clicking on 'Earn Akawo' button in the Earn tab.
-- At the end of each 24 hours, the withdraw button would appear so users can withdraw earned tokens.
 - The reward Rate is not same for fixed and flexible saving. Fixed savings users earns more than flexible account savers.
 ## Host
 The Dapp was hosted on https://akawo.vercel.app/
