@@ -881,7 +881,7 @@ const getEarned = async () => {
       <Head>
         <title>Akawo</title>
         <meta name="description" content="Decentralised Bank" />
-        <link rel="icon" href="#" />
+        <link rel="icon" href="/akawo.png" />
       </Head>
       <div className={styles.main}>
         <div className={styles.body}>
