@@ -552,7 +552,7 @@ const getEarned = async () => {
       _earnTime = new Date (_earnTime * 1000);
       
       if ((_earnTime <= Date.now())){
-        setEarnTime("Click the button again to get next earning session or to start new session");
+        setEarnTime("");
       }else{        
       setEarnTime("Come back: "+_earnTime.toString());
       }
