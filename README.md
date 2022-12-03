@@ -7,6 +7,7 @@ A decentralized Bank.
 - **Nextjs** - Nextjs used for the frontend
 ## Usage
 - Users connect wallet before accessing the dapp.
+- Users must hold at least 1 AKW tokens before utilizing the platform, by using the trade tab and swapping for AKW tokens.
 - Users choose to use fixed or flexible savings. Fixed savings locks up the user tokens for sometime but flexible can be
 withdrawn at will.
 - There is withdrawal fee which are paid by users when trying to withdraw from a flexible savings account, but no fee
