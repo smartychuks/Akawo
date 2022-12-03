@@ -26,6 +26,7 @@ export default function Home() {
   const [resetAddress, setResetAddress] = useState("");
   const [whichTab, setWhichTab] = useState("account");
   const [earnTime, setEarnTime] = useState("");
+  const [unixEarnTime, setUnixEarnTime] = useState();
   // The tab user is in
   const [liquidityTab, setLiquidityTab] = useState(false);
   // Initialize the variable
@@ -547,17 +548,17 @@ const getEarned = async () => {
       setLoading(true);
       let _earnTime = await akawoContract.getEarnTime();
       setLoading(false);  
+      setUnixEarnTime(withdrawDate.toString());
       _earnTime = new Date (_earnTime * 1000);
       
-      if ((earnTime < Date.now())){
+      if ((_earnTime <= Date.now())){
         setEarnTime("Click the button again to get next earning session or to start new session");
       }else{        
       setEarnTime("Come back: "+_earnTime.toString());
       }
-      setEarnTime(_earnTime.toString());
     } catch (error) {
       alert(error.reason);
-      console.error(error)
+      console.error(error);
     }
   }
 
@@ -633,8 +634,7 @@ const getEarned = async () => {
               <br />
               <strong>Matic Balance: </strong>{utils.formatEther(maticBalance)}
               <br />
-              <strong>Akawo LP tokens Balance: </strong>{utils.formatEther(lpBalance)}
-              
+              <strong>Akawo LP tokens Balance: </strong>{utils.formatEther(lpBalance)}              
             </div>
           </div>
         </>
@@ -642,28 +642,17 @@ const getEarned = async () => {
     }else if(walletConnected && (whichTab == "earn")){
       return(
         <div>
-          <p>Click the button below to earn Akawo for the next 24 hours</p>
-          
-            
+          <p>Click the button below to earn Akawo for the next 24 hours</p>            
             <button className={styles.button1} onClick={()=>{earnTimeSet(); getEarnTime(); getEarned();}}>Earn Akawo</button>
             <p>{earnTime}</p>
-          {// Conditional used to display the withdraw earned button
-            earnTime >= Date.now() ?
-            <button className={styles.button1} onClick={()=>withdrawEarned()}>Withdraw Earned Tokens</button> : null
-          }
-            You have earned: {earned}
-          
+            <button className={styles.button1} onClick={()=>withdrawEarned()}>Withdraw Earned Tokens</button>          
+            You have earned: {earned}          
         </div>
       )
     }else{
       renderOnDisconnect();
     }
   };
-
-  // function to render Earn page
-  const renderEarn = () => {
-
-  }
 
   // function to render liquidity and swap tab
   const isLiquidity = () => {
@@ -902,7 +891,7 @@ const getEarned = async () => {
               <ul>
                 <li><a href="#" onClick={()=>{setWhichTab("account"); getBalance()}}>Account</a></li>
                 <li><a href="#" onClick={()=>{setWhichTab("trade"); getAmounts()}}>Trade</a></li>
-                <li><a href="#" onClick={()=>setWhichTab("earn")}>Earn</a></li>                
+                <li><a href="#" onClick={()=>{setWhichTab("earn"); getEarnTime(); getEarned();}}>Earn</a></li>                
               </ul>
             </div>
           </div>
